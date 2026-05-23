@@ -40,7 +40,7 @@
             letter-spacing: 2px;
         }
 
-        /* 🍔 手機版漢堡按鈕 (預設隱藏) */
+        /* 🍔 手機版漢堡按鈕 */
         .menu-toggle {
             display: none;
             position: absolute;
@@ -145,7 +145,7 @@
 
         .category-block {
             margin-bottom: 40px;
-            scroll-margin-top: 20px; /* 滾動對齊留白 */
+            scroll-margin-top: 20px;
         }
 
         .menu-title { 
@@ -268,7 +268,6 @@
             margin: 25px 0;
         }
 
-        /* 📋 填寫欄位 UI */
         form label { 
             display: block; 
             margin-top: 15px; 
@@ -320,60 +319,21 @@
             cursor: not-allowed; 
         }
 
-        /* 📱 響應式網頁設計 (RWD) 斷點設定 */
         @media (max-width: 992px) {
-            .container {
-                flex-direction: column;
-                padding: 0 15px;
-            }
-
-            /* 漢堡按鈕現身 */
-            .menu-toggle {
-                display: block;
-            }
-
-            /* 左側側邊欄在手機版變成彈出式抽屜 */
+            .container { flex-direction: column; padding: 0 15px; }
+            .menu-toggle { display: block; }
             .category-sidebar {
-                position: fixed;
-                top: 0;
-                left: -220px; /* 預設藏在左邊外面 */
-                width: 200px;
-                height: 100vh;
-                z-index: 1000;
-                border-radius: 0;
-                transition: left 0.3s ease;
-                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+                position: fixed; top: 0; left: -220px; width: 200px; height: 100vh;
+                z-index: 1000; border-radius: 0; transition: left 0.3s ease; box-shadow: 5px 0 15px rgba(0,0,0,0.1);
             }
-
-            /* 當啟動 .active 時滑入畫面 */
-            .category-sidebar.active {
-                left: 0;
-            }
-
-            /* 手機版遮罩層 */
+            .category-sidebar.active { left: 0; }
             .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0,0,0,0.4);
-                z-index: 999;
+                display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(0,0,0,0.4); z-index: 999;
             }
-
-            .sidebar-overlay.active {
-                display: block;
-            }
-
-            .menu-section, .cart-section {
-                width: 100%;
-                box-sizing: border-box;
-            }
-            
-            .cart-section {
-                position: static;
-            }
+            .sidebar-overlay.active { display: block; }
+            .menu-section, .cart-section { width: 100%; box-sizing: border-box; }
+            .cart-section { position: static; }
         }
     </style>
 </head>
@@ -394,32 +354,29 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="container">
+        <!-- 🧭 左側分類選單 -->
         <nav class="category-sidebar" id="categorySidebar">
             <h4>商品分類</h4>
-            <div id="categoryList">
-                </div>
+            <div id="categoryList"></div>
         </nav>
 
-        <div class="menu-section" id="menuSectionsContainer">
-            </div>
+        <!-- 中央菜單區 -->
+        <div class="menu-section" id="menuSectionsContainer"></div>
 
+        <!-- 右側購物車 -->
         <div class="cart-section">
             <h3>🛒 您的購物車</h3>
             <div id="cartItems">
                 <p style="color: #888; font-size: 0.95rem;">購物車是空的，快去選購吧！</p>
             </div>
             <div class="total-price">總計: NT$ <span id="totalAmount">0</span></div>
-            
             <hr>
-            
             <h3>📋 訂購人資訊</h3>
             <form id="orderForm">
                 <label for="custName">真實姓名：</label>
                 <input type="text" id="custName" placeholder="請輸入您的姓名" required>
-
                 <label for="custPhone">聯絡電話（核對與異常通知）：</label>
                 <input type="tel" id="custPhone" placeholder="例如：0912345678" required>
-
                 <label for="pickupTime">預計取餐時間：</label>
                 <select id="pickupTime" required>
                     <option value="">請選擇取餐時間...</option>
@@ -433,43 +390,55 @@
     </div>
 
     <script>
+        // ⚠️ 記得替換成你剛剛「新增部署」拿到的最新 API 網址！
         const API_URL = "https://script.google.com/macros/s/AKfycbyTNJGKfcZzyQklYGk12nj_JjTqIf24qnTbUxp1GPGyvwOcd4wuWBfJxibIMG0OmWff/exec";
 
-        // 🌟 已為你擴充品項並分類 (可自由增刪，網頁會自動同步)
-        const menuProducts = [
-            { id: 1, name: "香酥雞排", price: 100, category: "簡餐" },
-            { id: 2, name: "韓式雞排", price: 100, category: "簡餐" },
-            { id: 3, name: "脆皮雞排", price: 110, category: "簡餐" },
-            { id: 4, name: "細薯", price: 35, category: "炸物" },
-            { id: 5, name: "雞蛋豆腐", price: 45, category: "炸物" },
-            { id: 6, name: "水餃(15個)", price: 60, category: "水餃" },
-            { id: 7, name: "水餃(20個)", price: 60, category: "水餃" },
-            { id: 8, name: "素水餃(20個)", price: 60, category: "水餃" },
-            { id: 9, name: "素水餃(15個)", price: 60, category: "水餃" },
-            { id: 10, name: "珍珠奶茶", price: 25, category: "飲料" },
-            { id: 11, name: "紅茶", price: 20, category: "飲料" }
-        ];
-
+        let menuProducts = []; // 💡 資料改由從試算表即時動態抓取
         let cart = [];
 
-        // 🍔 控制手機版漢堡選單開關
+        // 🚀 連線到 Google 試算表抓取店主設定好的動態分類與品項
+        function fetchMenu() {
+            const container = document.getElementById('menuSectionsContainer');
+            container.innerHTML = `<p style="text-align:center; color:#457b9d; padding:20px;">ℹ️ 正在連線雲端資料庫，載入今日最新菜單...</p>`;
+
+            fetch(API_URL)
+            .then(res => res.json())
+            .then(result => {
+                if (result.status === "success") {
+                    menuProducts = result.data;
+                    initMenu(); // 成功抓到資料後，繪製網頁介面
+                } else {
+                    container.innerHTML = `<p style="text-align:center; color:#e63946; padding:20px;">❌ 菜單載入失敗：${result.message}</p>`;
+                }
+            })
+            .catch(err => {
+                container.innerHTML = `<p style="text-align:center; color:#e63946; padding:20px;">❌ 連線失敗，請檢查 API 網址或後端部署狀態。</p>`;
+                console.error(err);
+            });
+        }
+
         function toggleSidebar() {
             document.getElementById('categorySidebar').classList.toggle('active');
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
 
-        // 🔄 自動渲染分類按鈕與分區商品列表
+        // 🔄 依據抓回來的資料，自動排序、分類並繪製畫面的核心
         function initMenu() {
-            // 1. 萃取所有不重複的分類
+            if (menuProducts.length === 0) {
+                document.getElementById('menuSectionsContainer').innerHTML = `<p style="text-align:center; color:#888; padding:20px;">今日店家休息中，暫不供應餐點。</p>`;
+                return;
+            }
+
+            // 自動抽取出所有店主有在試算表填寫的分類（不重複）
             const categories = [...new Set(menuProducts.map(p => p.category))];
             
-            // 2. 渲染左側導覽按鈕
+            // 1. 動態畫出左側/漢堡分類按鈕
             const categoryList = document.getElementById('categoryList');
             categoryList.innerHTML = categories.map(cat => `
                 <button class="category-btn" onclick="scrollToCategory('${cat}')">${cat}</button>
             `).join('');
 
-            // 3. 按分類分組渲染商品
+            // 2. 動態畫出中央分類商品區塊
             const container = document.getElementById('menuSectionsContainer');
             container.innerHTML = categories.map(cat => {
                 const filteredProducts = menuProducts.filter(p => p.category === cat);
@@ -490,16 +459,10 @@
             }).join('');
         }
 
-        // ✈️ 點擊分類平滑錨點滾動
         function scrollToCategory(catId) {
             const target = document.getElementById(`cat-${catId}`);
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth' });
-            }
-            // 如果是在手機版，點選完後自動收回選單
-            if (window.innerWidth <= 992) {
-                toggleSidebar();
-            }
+            if (target) { target.scrollIntoView({ behavior: 'smooth' }); }
+            if (window.innerWidth <= 992) { toggleSidebar(); }
         }
 
         function addToCart(productId) {
@@ -540,7 +503,6 @@
 
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.innerText = "訂單送出中...";
@@ -580,8 +542,8 @@
             });
         });
 
-        // 初始化菜單
-        initMenu();
+        // 🚀 網頁一載入，立刻去 Google 試算表搬菜單回來！
+        fetchMenu();
     </script>
 </body>
 </html>
