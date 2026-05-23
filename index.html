@@ -22,6 +22,7 @@
             margin: 0; 
             padding: 0; 
             line-height: 1.6;
+            scroll-behavior: smooth; /* 平滑滾動 */
         }
 
         header { 
@@ -29,6 +30,7 @@
             color: white; 
             text-align: center; 
             padding: 35px 0 25px 0; 
+            position: relative;
         }
         
         header h1 { 
@@ -36,6 +38,21 @@
             font-size: 1.8rem; 
             font-weight: 600;
             letter-spacing: 2px;
+        }
+
+        /* 🍔 手機版漢堡按鈕 (預設隱藏) */
+        .menu-toggle {
+            display: none;
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            z-index: 1001;
         }
 
         /* 🏷️ 質感跑馬燈設計 */
@@ -67,33 +84,82 @@
             margin-left: 10px;
         }
 
-        /* 📦 版面佈局優化 */
+        /* 📦 三欄式版面佈局 */
         .container { 
-            max-width: 1050px; 
+            max-width: 1200px; 
             margin: 30px auto; 
             padding: 0 20px; 
             display: flex; 
             gap: 25px; 
-            flex-wrap: wrap; 
         }
 
+        /* 🧭 左側分類導覽列 */
+        .category-sidebar {
+            width: 180px;
+            flex-shrink: 0;
+            background: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(69, 123, 157, 0.08);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .category-sidebar h4 {
+            margin: 0 0 15px 0;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+            border-bottom: 2px solid var(--light-blue);
+            padding-bottom: 8px;
+        }
+
+        .category-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: none;
+            border: none;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            background-color: #f0f4f8;
+            color: var(--accent-blue);
+            padding-left: 18px;
+        }
+
+        /* 中央菜單區 */
         .menu-section { 
             flex: 2; 
             min-width: 320px; 
         }
 
+        .category-block {
+            margin-bottom: 40px;
+            scroll-margin-top: 20px; /* 滾動對齊留白 */
+        }
+
         .menu-title { 
             border-left: 4px solid var(--accent-blue); 
             padding-left: 12px; 
-            margin-bottom: 25px; 
+            margin: 0 0 20px 0; 
             color: var(--primary-dark);
-            font-size: 1.4rem;
+            font-size: 1.35rem;
             font-weight: 600;
         }
 
         .grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
             gap: 20px; 
         }
 
@@ -143,16 +209,18 @@
             background-color: var(--accent-blue);
         }
 
-        /* 🛒 購物車與右側表單 UI */
+        /* 🛒 右側購物車 UI */
         .cart-section { 
-            flex: 1; 
-            min-width: 320px; 
+            width: 320px;
+            flex-shrink: 0;
             background: white; 
             padding: 25px; 
             border-radius: 12px; 
             box-shadow: var(--card-shadow); 
             height: fit-content; 
             border: 1px solid rgba(69, 123, 157, 0.08);
+            position: sticky;
+            top: 20px;
         }
 
         .cart-section h3 {
@@ -251,11 +319,68 @@
             color: #94a3b8;
             cursor: not-allowed; 
         }
+
+        /* 📱 響應式網頁設計 (RWD) 斷點設定 */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+                padding: 0 15px;
+            }
+
+            /* 漢堡按鈕現身 */
+            .menu-toggle {
+                display: block;
+            }
+
+            /* 左側側邊欄在手機版變成彈出式抽屜 */
+            .category-sidebar {
+                position: fixed;
+                top: 0;
+                left: -220px; /* 預設藏在左邊外面 */
+                width: 200px;
+                height: 100vh;
+                z-index: 1000;
+                border-radius: 0;
+                transition: left 0.3s ease;
+                box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            }
+
+            /* 當啟動 .active 時滑入畫面 */
+            .category-sidebar.active {
+                left: 0;
+            }
+
+            /* 手機版遮罩層 */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.4);
+                z-index: 999;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .menu-section, .cart-section {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .cart-section {
+                position: static;
+            }
+        }
     </style>
 </head>
 <body>
 
     <header>
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
         <h1>珍寶線上點餐系統</h1>
     </header>
 
@@ -266,11 +391,17 @@
         </marquee>
     </div>
 
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
     <div class="container">
-        <div class="menu-section">
-            <h3 class="menu-title">菜單</h3>
-            <div class="grid" id="menuGrid"></div>
-        </div>
+        <nav class="category-sidebar" id="categorySidebar">
+            <h4>商品分類</h4>
+            <div id="categoryList">
+                </div>
+        </nav>
+
+        <div class="menu-section" id="menuSectionsContainer">
+            </div>
 
         <div class="cart-section">
             <h3>🛒 您的購物車</h3>
@@ -304,24 +435,68 @@
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycby9MAsImUPHMAM3t4QdszaXcdl4n2wKjR_zZozHkpuGTbqai1cXZzT3UUsi-LSihPgz/exec";
 
+        // 🌟 已為你擴充品項並分類 (可自由增刪，網頁會自動同步)
         const menuProducts = [
-            { id: 1, name: "經典卡拉雞腿堡", price: 65 },
-            { id: 2, name: "原味蛋餅", price: 30 },
-            { id: 3, name: "脆皮薯條", price: 35 },
-            { id: 4, name: "招牌大冰奶", price: 25 }
+            { id: 1, name: "手工高麗菜水餃", price: 60, category: "水餃系列" },
+            { id: 2, name: "招牌韭菜水餃", price: 60, category: "水餃系列" },
+            { id: 3, name: "經典卡拉雞腿堡", price: 65, category: "美味漢堡" },
+            { id: 4, name: "原味蛋餅", price: 30, category: "美味漢堡" },
+            { id: 5, name: "脆皮薯條", price: 35, category: "精選炸物" },
+            { id: 6, name: "酥炸雞塊(6塊)", price: 45, category: "精選炸物" },
+            { id: 7, name: "招牌大冰奶", price: 25, category: "嚴選飲料" },
+            { id: 8, name: "沁涼冰紅茶", price: 20, category: "嚴選飲料" }
         ];
 
         let cart = [];
 
-        function renderMenu() {
-            const menuGrid = document.getElementById('menuGrid');
-            menuGrid.innerHTML = menuProducts.map(product => `
-                <div class="card">
-                    <h4>${product.name}</h4>
-                    <div class="price">NT$ ${product.price}</div>
-                    <button onclick="addToCart(${product.id})">加入購物車</button>
-                </div>
+        // 🍔 控制手機版漢堡選單開關
+        function toggleSidebar() {
+            document.getElementById('categorySidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        // 🔄 自動渲染分類按鈕與分區商品列表
+        function initMenu() {
+            // 1. 萃取所有不重複的分類
+            const categories = [...new Set(menuProducts.map(p => p.category))];
+            
+            // 2. 渲染左側導覽按鈕
+            const categoryList = document.getElementById('categoryList');
+            categoryList.innerHTML = categories.map(cat => `
+                <button class="category-btn" onclick="scrollToCategory('${cat}')">${cat}</button>
             `).join('');
+
+            // 3. 按分類分組渲染商品
+            const container = document.getElementById('menuSectionsContainer');
+            container.innerHTML = categories.map(cat => {
+                const filteredProducts = menuProducts.filter(p => p.category === cat);
+                return `
+                    <div class="category-block" id="cat-${cat}">
+                        <h3 class="menu-title">${cat}</h3>
+                        <div class="grid">
+                            ${filteredProducts.map(product => `
+                                <div class="card">
+                                    <h4>${product.name}</h4>
+                                    <div class="price">NT$ ${product.price}</div>
+                                    <button onclick="addToCart(${product.id})">加入購物車</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ✈️ 點擊分類平滑錨點滾動
+        function scrollToCategory(catId) {
+            const target = document.getElementById(`cat-${catId}`);
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth' });
+            }
+            // 如果是在手機版，點選完後自動收回選單
+            if (window.innerWidth <= 992) {
+                toggleSidebar();
+            }
         }
 
         function addToCart(productId) {
@@ -402,7 +577,8 @@
             });
         });
 
-        renderMenu();
+        // 初始化菜單
+        initMenu();
     </script>
 </body>
 </html>
