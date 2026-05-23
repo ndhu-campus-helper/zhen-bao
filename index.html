@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校園快捷點餐系統</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; padding: 0; }
+        header { background-color: #e63946; color: white; text-align: center; padding: 20px 0; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .menu-section { flex: 2; min-width: 300px; }
+        .menu-title { border-left: 5px solid #e63946; padding-left: 10px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
+        .card h4 { margin: 0 0 10px 0; font-size: 1.1rem; }
+        .card .price { color: #e63946; font-weight: bold; margin-bottom: 15px; }
+        .card button { background-color: #1d3557; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; }
+        .cart-section { flex: 1; min-width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: fit-content; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .cart-item button { background: #e63946; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; }
+        .total-price { text-align: right; font-size: 1.2rem; font-weight: bold; margin: 20px 0; color: #e63946; }
+        form label { display: block; margin-top: 10px; font-weight: bold; }
+        form input, form select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .submit-btn { background-color: #e63946; color: white; border: none; width: 100%; padding: 12px; margin-top: 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+        .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏫 校園美點餐網站</h1>
+        <p>登入學校帳號即可快速訂餐</p>
+    </header>
+
+    <div class="container">
+        <div class="menu-section">
+            <h3 class="menu-title">今日菜單</h3>
+            <div class="grid" id="menuGrid"></div>
+        </div>
+
+        <div class="cart-section">
+            <h3>🛒 您的購物車</h3>
+            <div id="cartItems">
+                <p style="color: #888;">購物車是空的，快去選購吧！</p>
+            </div>
+            <div class="total-price">總計: NT$ <span id="totalAmount">0</span></div>
+            <hr>
+            <h3>📋 訂購人資訊</h3>
+            <form id="orderForm">
+                <label for="custName">真實姓名：</label>
+                <input type="text" id="custName" placeholder="請輸入姓名" required>
+
+                <label for="custPhone">聯絡電話：</label>
+                <input type="tel" id="custPhone" placeholder="例如：0912345678" required>
+
+                <label for="pickupTime">預計取餐時間：</label>
+                <select id="pickupTime" required>
+                    <option value="">請選擇時間...</option>
+                    <option value="12:00">12:00</option>
+                    <option value="12:15">12:15</option>
+                    <option value="12:30">12:30</option>
+                </select>
+                <button type="submit" class="submit-btn" id="submitBtn" disabled>確認送出點餐</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const menuProducts = [
+            { id: 1, name: "經典卡拉雞腿堡", price: 65 },
+            { id: 2, name: "原味蛋餅", price: 30 },
+            { id: 3, name: "脆皮薯條", price: 35 },
+            { id: 4, name: "招牌大冰奶", price: 25 }
+        ];
+
+        let cart = [];
+
+        function renderMenu() {
+            const menuGrid = document.getElementById('menuGrid');
+            menuGrid.innerHTML = menuProducts.map(product => `
+                <div class="card">
+                    <h4>${product.name}</h4>
+                    <div class="price">NT$ ${product.price}</div>
+                    <button onclick="addToCart(${product.id})">加入購物車</button>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(productId) {
+            const product = menuProducts.find(p => p.id === productId);
+            const existItem = cart.find(item => item.id === productId);
+            if (existItem) { existItem.quantity += 1; } else { cart.push({ ...product, quantity: 1 }); }
+            updateCart();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+
+        // 更新購物車畫面與計算總價
+        function updateCart() {
+            const cartItemsDiv = document.getElementById('cartItems');
+            const totalAmountSpan = document.getElementById('totalAmount');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = `<p style="color: #888;">購物車是空的，快去選購吧！</p>`;
+                totalAmountSpan.innerText = "0";
+                submitBtn.disabled = true;
+                return;
+            }
+
+            cartItemsDiv.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div><strong>${item.name}</strong><br><small>NT$ ${item.price} x ${item.quantity}</small></div>
+                    <button onclick="removeFromCart(${item.id})">刪除</button>
+                </div>
+            `).join('');
+
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            totalAmountSpan.innerText = total;
+            submitBtn.disabled = false;
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const itemSummary = cart.map(item => `${item.name}x${item.quantity}`).join(', ');
+            alert(`【前端測試成功！】\n姓名：${document.getElementById('custName').value}\n餐點：${itemSummary}`);
+        });
+
+        renderMenu();
+    </script>
+</body>
+</html>
