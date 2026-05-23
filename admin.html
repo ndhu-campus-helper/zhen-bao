@@ -70,7 +70,11 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzbqgEe19G-214V1cqAr27QxSufbS4lG4z04pGrXZj2fgAjEC6jZ7s9_XzDz4o5TuCE/exec";
+        // 💡 修正關鍵一：定義最乾淨的基礎網址
+        const BASE_API_URL = "https://script.google.com/macros/s/AKfycbzbqgEe19G-214V1cqAr27QxSufbS4lG4z04pGrXZj2fgAjEC6jZ7s9_XzDz4o5TuCE/exec";
+        
+        // 💡 修正關鍵二：讀取資料時，自動為網址補上「我要訂單」的暗號分流
+        const API_URL = BASE_API_URL + "?action=getOrders";
 
         let mockOrders = [];
 
@@ -194,7 +198,8 @@
         }
 
         function changeStatus(orderId, newStatus) {
-            fetch(API_URL, {
+            // 💡 修正關鍵三：修改狀態的 POST 請求，用最乾淨、沒有問號暗號的基礎網址才不會造成 GAS 錯亂
+            fetch(BASE_API_URL, {
                 method: "POST",
                 body: JSON.stringify({
                     action: "updateStatus",
