@@ -132,6 +132,7 @@
         }
 
         // 真正從 Google 試算表抓取最新點餐資料 (GET)
+        // 真正從 Google 試算表抓取最新點餐資料 (帶有超強防空機制版)
         function fetchOrders() {
             const grid = document.getElementById('ordersGrid');
             grid.innerHTML = '<p style="color: #64748b;">🔄 正在從 Google 試算表即時同步最新訂單...</p>';
@@ -139,26 +140,42 @@
             fetch(API_URL)
             .then(res => res.json())
             .then(data => {
+                // 💡 防禦機制 1：如果試算表根本是空的，或者抓回來的資料不是陣列，直接攔截
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    grid.innerHTML = '<p style="color: #64748b;">目前試算表中沒有任何訂單數據。</p>';
+                    return;
+                }
+
                 // 將資料倒序，最新訂單排最上面
                 let rawOrders = data.reverse(); 
                 
-                // 將 Google 試算表的資料欄位映射到前端網頁
-                mockOrders = rawOrders.map((order, index) => ({
-                    id: index, 
-                    timestamp: order.Timestamp ? new Date(order.Timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '未知',
-                    name: order.Name || '無名氏',
-                    phoneLast3: order.PhoneLast3 || '無',
-                    items: order.Items || '無餐點',
-                    time: order.Time || '未定',
-                    total: order.Total || 0,
-                    status: order.Status || '新訂單'
-                }));
+                // 💡 防禦機制 2：使用彈性寫法，就算格子是空的、遺漏的、大寫打錯的，通通給予安全預設值
+                mockOrders = rawOrders.map((order, index) => {
+                    // 幫所有的 Key 做不分大小寫的安全安全相容
+                    const getProp = (obj, key) => {
+                        if (!obj) return '';
+                        // 尋找有沒有對應的 key (不分大小寫)
+                        const realKey = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase());
+                        return realKey ? obj[realKey] : '';
+                    };
+
+                    return {
+                        id: index, 
+                        timestamp: getProp(order, 'Timestamp') ? new Date(getProp(order, 'Timestamp')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '剛剛',
+                        name: getProp(order, 'Name') || '不具名顧客',
+                        phoneLast3: getProp(order, 'PhoneLast3') || '無',
+                        items: getProp(order, 'Items') || '（未選購餐點）',
+                        time: getProp(order, 'Time') || '儘速取餐',
+                        total: getProp(order, 'Total') || 0,
+                        status: getProp(order, 'Status') || '新訂單'
+                    };
+                });
 
                 renderAdminBoard(); 
             })
             .catch(err => {
                 grid.innerHTML = '<p style="color: #ef4444;">❌ 訂單同步失敗，請確認後端部署設定是否正確。</p>';
-                console.error(err);
+                console.error("錯誤詳細資訊：", err);
             });
         }
 
