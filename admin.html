@@ -44,8 +44,8 @@
     <div class="dashboard">
         <div class="stats-bar">
             <div class="stat-card">
-                <h3>💰 已完成訂單總營業額</h3>
-                <div class="value" id="statRevenue">NT$ 0</div>
+                <h3>✅ 已完成訂單數量</h3>
+                <div class="value" id="statRevenue">0 筆</div>
             </div>
             <div class="stat-card" style="border-left-color: #ef4444;">
                 <h3>待處理新訂單</h3>
@@ -101,9 +101,9 @@
                     nextActionHtml = `<span style="color:#10b981; font-weight:bold;">✓ 已取餐</span>`;
                 }
 
-                // 💡 邏輯修正：只有狀態完全等於「已完成」的訂單，才算入營業額
+                // 💡 邏輯修正：只要狀態完全等於「已完成」，數量就加 1 筆
                 if (order.status === "已完成") {
-                    revenue += Number(order.total);
+                    revenue += 1;
                 }
 
                 return `
