@@ -80,9 +80,16 @@
 
         function renderAdminBoard() {
             const grid = document.getElementById('ordersGrid');
+            
+            // 💡 邏輯修正：當完全沒有訂單時，除了顯示提示字，卡片數量也要確實歸零！
             if (mockOrders.length === 0) {
                 grid.innerHTML = '<p style="color: #64748b;">目前沒有任何訂單。</p>';
-                return;
+                
+                // 🌟 強迫看板同步歸零，鬼影直接消失
+                document.getElementById('statRevenue').innerText = `0 筆`;
+                document.getElementById('statNewOrders').innerText = `0 筆`;
+                document.getElementById('statCookingOrders').innerText = `0 筆`;
+                return; 
             }
 
             let revenue = 0;
