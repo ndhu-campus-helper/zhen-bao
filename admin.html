@@ -153,26 +153,24 @@
                         return realKey ? obj[realKey] : '';
                     };
 
+                    // 💡 處理預計取餐時間 (過濾 1899 幽靈時間)
+                    let rawTime = getProp(order, 'Time');
+                    let formattedTime = '儘速取餐';
+                    if (rawTime) {
+                        if (String(rawTime).includes('1899-12-30')) {
+                            formattedTime = String(rawTime).split('T')[1].substring(0, 5);
+                        } else {
+                            formattedTime = rawTime;
+                        }
+                    }
+
                     return {
                         orderId: getProp(order, 'OrderID') || '',
                         timestamp: getProp(order, 'Timestamp') ? new Date(getProp(order, 'Timestamp')).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '剛剛',
                         name: getProp(order, 'Name') || '不具名顧客',
                         phone: getProp(order, 'Phone') || '無',
                         items: getProp(order, 'Items') || '（未選購餐點）',
-                        let rawTime = getProp(order, 'Time');
-                        let formattedTime = '儘速取餐';
-                        if (rawTime) {
-                            if (String(rawTime).includes('1899-12-30')) {
-                                // 如果是 ISO 格式 (1899-12-30T12:00:00...)，直接用切字串切出 12:00
-                                formattedTime = String(rawTime).split('T')[1].substring(0, 5);
-                            } else if (rawTime instanceof Date || !isNaN(Date.parse(rawTime))) {
-                                // 如果是其他標準時間格式，轉成漂亮的本地時間
-                                formattedTime = new Date(rawTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                            } else {
-                                // 如果本來就是純文字，直接顯示
-                                formattedTime = rawTime;
-                            }
-                        }
+                        time: formattedTime, // 💡 使用我們過濾完的漂亮時間
                         total: getProp(order, 'Total') || 0,
                         status: getProp(order, 'Status') || '新訂單'
                     };
