@@ -10,7 +10,7 @@
         header h1 { margin: 0; font-size: 1.5rem; }
         .dashboard { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
         .stats-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .stat-card { background: white; padding: 15px 20px; border-radius: 8px; flex: 1; min-width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 4px solid #3b82f6; }
+        .stat-card { background: white; padding: 15px 20px; border-radius: 8px; flex: 1; min-width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 4px solid #10b981; }
         .stat-card h3 { margin: 0 0 5px 0; font-size: 0.9rem; color: #64748b; }
         .stat-card .value { font-size: 1.8rem; font-weight: bold; color: #1e293b; }
         .board-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -44,7 +44,7 @@
     <div class="dashboard">
         <div class="stats-bar">
             <div class="stat-card">
-                <h3>今日總營業額</h3>
+                <h3>💰 已完成訂單總營業額</h3>
                 <div class="value" id="statRevenue">NT$ 0</div>
             </div>
             <div class="stat-card" style="border-left-color: #ef4444;">
@@ -68,9 +68,8 @@
     </div>
 
     <script>
-        // ⚠️ 請換成你剛剛產生的最新 API 網址
+        // ⚠️ 記得把這裡換成你那串 Google Apps Script 的 /exec 網址！
         const API_URL = "https://script.google.com/macros/s/AKfycbz2iWSlLCQOsM62lDTOL2-scgy_dIrMw1KPBYMf7od9NHG8fu16QirJ977jvX2D9lgN/exec";
-        
 
         let mockOrders = [];
 
@@ -96,13 +95,16 @@
                 } else if (order.status === "製作中") {
                     cookingCount++;
                     statusClass = 'cooking';
-                    nextActionHtml = `<button class="status-btn btn-next" style="background-color: #3b82f6;" onclick="changeStatus('${order.orderId}', '已完成')">完成訂單</button>`;
+                    nextActionHtml = `<button class="status-btn btn-next" style="background-color: #3b82f6;" onclick="changeStatus('${order.orderId}', '已完成')">製作完成</button>`;
                 } else if (order.status === "已完成") {
                     statusClass = 'done';
                     nextActionHtml = `<span style="color:#10b981; font-weight:bold;">✓ 已取餐</span>`;
                 }
 
-                if (order.status === "已完成") revenue += Number(order.total);
+                // 💡 邏輯修正：只有狀態完全等於「已完成」的訂單，才算入營業額
+                if (order.status === "已完成") {
+                    revenue += Number(order.total);
+                }
 
                 return `
                     <div class="order-card ${statusClass}">
@@ -131,6 +133,7 @@
             document.getElementById('statCookingOrders').innerText = `${cookingCount} 筆`;
         }
 
+        // 從 Google 試算表抓取訂單並做時區補正
         function fetchOrders() {
             const grid = document.getElementById('ordersGrid');
             grid.innerHTML = '<p style="color: #64748b;">🔄 正在從 Google 試算表即時同步最新訂單...</p>';
@@ -153,12 +156,21 @@
                         return realKey ? obj[realKey] : '';
                     };
 
-                    // 💡 處理預計取餐時間 (過濾 1899 幽靈時間)
+                    // 💡 時區補正：完美解決 12 點變成 4 點的 Bug
                     let rawTime = getProp(order, 'Time');
                     let formattedTime = '儘速取餐';
+                    
                     if (rawTime) {
                         if (String(rawTime).includes('1899-12-30')) {
-                            formattedTime = String(rawTime).split('T')[1].substring(0, 5);
+                            // 將 ISO 字串轉成 JS 時間物件
+                            let dateObj = new Date(rawTime);
+                            // 💡 核心：手動加上 8 小時（台北時區補正）
+                            dateObj.setHours(dateObj.getHours() + 8);
+                            
+                            // 重新切出漂亮的時與分 (確保保持補正後的 12:00)
+                            let hh = String(dateObj.getHours()).padStart(2, '0');
+                            let mm = String(dateObj.getMinutes()).padStart(2, '0');
+                            formattedTime = `${hh}:${mm}`;
                         } else {
                             formattedTime = rawTime;
                         }
@@ -170,7 +182,7 @@
                         name: getProp(order, 'Name') || '不具名顧客',
                         phone: getProp(order, 'Phone') || '無',
                         items: getProp(order, 'Items') || '（未選購餐點）',
-                        time: formattedTime, // 💡 使用我們過濾完的漂亮時間
+                        time: formattedTime, 
                         total: getProp(order, 'Total') || 0,
                         status: getProp(order, 'Status') || '新訂單'
                     };
@@ -184,7 +196,6 @@
             });
         }
 
-        // 💡 核心：按下按鈕時，同步發送 POST 請求去修改 Google 試算表狀態！
         function changeStatus(orderId, newStatus) {
             fetch(API_URL, {
                 method: "POST",
@@ -197,7 +208,6 @@
             .then(res => res.json())
             .then(result => {
                 if (result.status === "success") {
-                    // 雲端修改成功後，重新撈取最新資料重繪網頁
                     fetchOrders();
                 } else {
                     alert("修改試算表狀態失敗：" + result.message);
