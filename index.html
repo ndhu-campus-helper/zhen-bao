@@ -29,7 +29,7 @@
 
     <header>
         <h1>🏫 校園快捷點餐網站</h1>
-        <p>登入學校帳號即可快速訂餐</p>
+        <p>點餐免登入！請填寫正確聯絡電話方便店家核對</p>
     </header>
 
     <div class="container">
@@ -50,8 +50,8 @@
                 <label for="custName">真實姓名：</label>
                 <input type="text" id="custName" placeholder="請輸入姓名" required>
 
-                <label for="phoneLast3">手機後三碼（現場取餐對帳用）：</label>
-                <input type="text" id="phoneLast3" placeholder="例如：789" pattern="[0-9]{3}" maxlength="3" required>
+                <label for="custPhone">聯絡電話（若餐點有狀況店家將以此致電）：</label>
+                <input type="tel" id="custPhone" placeholder="例如：0912345678" required>
 
                 <label for="pickupTime">預計取餐時間：</label>
                 <select id="pickupTime" required>
@@ -66,7 +66,8 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbwoS8NAFBIoF6wT2WG95QqqDk4qT4L42tc2NbGPOuI-LKkKGxL8C_tWemmuyZPOU-aE/exec";
+        // ⚠️ 請換成你剛剛產生的最新 API 網址
+        const API_URL = "https://script.google.com/macros/s/AKfycbxNmKw4QZq4yb0wsDTAgyvAL-LcZyUKwaKAjrFTP2EQb0k7WuYESlKG0imYLAJBGbh9/exec";
 
         const menuProducts = [
             { id: 1, name: "經典卡拉雞腿堡", price: 65 },
@@ -124,25 +125,23 @@
             submitBtn.disabled = false;
         }
 
-        // 監聽表單送出動作（真正連線 Google 試算表版）
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.innerText = "訂單送出中，請稍候...";
+            submitBtn.innerText = "訂單送出中...";
 
             const itemSummary = cart.map(item => `${item.name}x${item.quantity}`).join(', ');
 
             const orderData = {
                 name: document.getElementById('custName').value,
-                phoneLast3: document.getElementById('phoneLast3').value,
+                phone: document.getElementById('custPhone').value,
                 time: document.getElementById('pickupTime').value,
                 items: itemSummary,
                 total: document.getElementById('totalAmount').innerText
             };
 
-            // 真正發送資料給 Google
             fetch(API_URL, {
                 method: "POST",
                 body: JSON.stringify(orderData)
@@ -150,7 +149,7 @@
             .then(res => res.json())
             .then(result => {
                 if (result.status === "success") {
-                    alert("🎉 訂單送出成功！店家已收到您的餐點預約。");
+                    alert("🎉 點餐成功！店家已收到您的餐點預約。");
                     document.getElementById('orderForm').reset();
                     cart = [];
                     updateCart();
@@ -159,7 +158,7 @@
                 }
             })
             .catch(err => {
-                alert("❌ 連線失敗，請確認是否已授權或登入 Google 帳號。");
+                alert("❌ 系統連線發生錯誤，請稍後再試。");
                 console.error(err);
             })
             .finally(() => {
