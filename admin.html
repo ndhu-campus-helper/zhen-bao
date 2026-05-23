@@ -43,17 +43,19 @@
 
     <div class="dashboard">
         <div class="stats-bar">
-            <div class="stat-card">
-                <h3>✅ 已完成訂單數量</h3>
-                <div class="value" id="statRevenue">0 筆</div>
-            </div>
             <div class="stat-card" style="border-left-color: #ef4444;">
                 <h3>待處理新訂單</h3>
                 <div class="value" id="statNewOrders">0 筆</div>
             </div>
+            
             <div class="stat-card" style="border-left-color: #f59e0b;">
                 <h3>餐點製作中</h3>
                 <div class="value" id="statCookingOrders">0 筆</div>
+            </div>
+
+            <div class="stat-card" style="border-left-color: #10b981;">
+                <h3>✅ 已完成訂單數量</h3>
+                <div class="value" id="statRevenue">0 筆</div>
             </div>
         </div>
 
@@ -68,7 +70,6 @@
     </div>
 
     <script>
-        // ⚠️ 記得把這裡換成你那串 Google Apps Script 的 /exec 網址！
         const API_URL = "https://script.google.com/macros/s/AKfycby9MAsImUPHMAM3t4QdszaXcdl4n2wKjR_zZozHkpuGTbqai1cXZzT3UUsi-LSihPgz/exec";
 
         let mockOrders = [];
@@ -101,8 +102,7 @@
                     nextActionHtml = `<span style="color:#10b981; font-weight:bold;">✓ 已取餐</span>`;
                 }
 
-                // 💡 邏輯修正：只要狀態完全等於「已完成」，數量就加 1 筆
-                if (order.status === "已完成") {
+                if (order.status === "Alice" || order.status === "已完成") {
                     revenue += 1;
                 }
 
@@ -133,7 +133,6 @@
             document.getElementById('statCookingOrders').innerText = `${cookingCount} 筆`;
         }
 
-        // 從 Google 試算表抓取訂單並做時區補正
         function fetchOrders() {
             const grid = document.getElementById('ordersGrid');
             grid.innerHTML = '<p style="color: #64748b;">🔄 正在從 Google 試算表即時同步最新訂單...</p>';
@@ -156,23 +155,16 @@
                         return realKey ? obj[realKey] : '';
                     };
 
-                    // 💡 時區補正：完美解決 12 點變成 4 點的 Bug
-                   // 💡 時區終極對齊：把被扣掉的 8 小時精準補回來
                     let rawTime = getProp(order, 'Time');
                     let formattedTime = '儘速取餐';
                     
                     if (rawTime) {
                         if (String(rawTime).includes('1899-12-30')) {
-                            // 1. 先用 'T' 切開，拿到 "04:00:00.000Z"
                             let timePart = String(rawTime).split('T')[1];
-                            // 2. 抓出裡面的小時（04）和分鐘（00）
                             let hour = parseInt(timePart.substring(0, 2), 10);
                             let minute = timePart.substring(3, 5);
                             
-                            // 3. 把被扣掉的 8 小時加回來，如果超過 24 小時就循環
                             let correctedHour = (hour + 8) % 24;
-                            
-                            // 4. 補上前方的大底零（例如 9 點變成 09 點）
                             let hh = String(correctedHour).padStart(2, '0');
                             
                             formattedTime = `${hh}:${minute}`;
