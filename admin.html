@@ -9,39 +9,25 @@
         header { background-color: #1e293b; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { margin: 0; font-size: 1.5rem; }
         .dashboard { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-        
-        /* 數據統計列 */
         .stats-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .stat-card { background: white; padding: 15px 20px; border-radius: 8px; flex: 1; min-width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-left: 4px solid #3b82f6; }
-        .stat-card h3 { margin: 0 0 5px 0; font-size: 0.9rem; color: #64748b; text-transform: uppercase; }
+        .stat-card h3 { margin: 0 0 5px 0; font-size: 0.9rem; color: #64748b; }
         .stat-card .value { font-size: 1.8rem; font-weight: bold; color: #1e293b; }
-
-        /* 訂單看板 */
         .board-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .refresh-btn { background-color: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .refresh-btn:hover { background-color: #2563eb; }
-        
         .orders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        
-        /* 訂單卡片設計 */
         .order-card { background: white; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; border-top: 5px solid #cbd5e1; }
-        .order-card.new { border-top-color: #ef4444; background-color: #fff5f5; } /* 新訂單用紅色 */
-        .order-card.cooking { border-top-color: #f59e0b; } /* 製作中用橘色 */
-        .order-card.done { border-top-color: #10b981; opacity: 0.7; } /* 已完成變淡綠 */
-
+        .order-card.new { border-top-color: #ef4444; background-color: #fff5f5; }
+        .order-card.cooking { border-top-color: #f59e0b; }
+        .order-card.done { border-top-color: #10b981; opacity: 0.7; }
         .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #64748b; }
         .buyer-info { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: #0f172a; }
-        .buyer-email { font-size: 0.85rem; color: #64748b; margin-top: -8px; margin-bottom: 15px; }
+        .buyer-detail { font-size: 0.85rem; color: #64748b; margin-top: -5px; margin-bottom: 15px; line-height: 1.4; }
         .order-items { background: #f8fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.95rem; line-height: 1.5; }
         .order-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
         .total-price { font-weight: bold; color: #ef4444; font-size: 1.1rem; }
-
-        /* 狀態按鈕 */
         .status-btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
         .btn-next { background-color: #10b981; color: white; }
-        .btn-next:hover { background-color: #059669; }
-
-        /* 狀態標籤 */
         .badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
         .badge.new { background: #fee2e2; color: #ef4444; }
         .badge.cooking { background: #fef3c7; color: #d97706; }
@@ -56,7 +42,6 @@
     </header>
 
     <div class="dashboard">
-        <!-- 數據統計 -->
         <div class="stats-bar">
             <div class="stat-card">
                 <h3>今日總營業額</h3>
@@ -72,76 +57,66 @@
             </div>
         </div>
 
-        <!-- 訂單看板主體 -->
         <div class="board-title">
             <h2>🔔 即時接單看板</h2>
             <button class="refresh-btn" onclick="fetchOrders()">🔄 重新整理訂單</button>
         </div>
 
         <div class="orders-grid" id="ordersGrid">
-            <!-- 訂單卡片會由 JavaScript 自動生成 -->
             <p style="color: #64748b;">正在載入最新訂單...</p>
         </div>
     </div>
 
     <script>
-        // 1. 假資料（模擬從 Google 試算表抓出來的訂單數據）
-        // 之後接上後端後，這裡會透過 API 自動更新
+        // 模擬從資料庫撈取到的新資料結構
         let mockOrders = [
-            { id: 101, timestamp: "12:02", email: "b110020xx@mail.edu.tw", name: "陳同學", items: "經典卡拉雞腿堡x1, 招牌大冰奶x1", time: "12:15", total: 90, status: "新訂單" },
-            { id: 102, timestamp: "12:05", email: "g111034xx@mail.edu.tw", name: "林同學", items: "原味蛋餅x2, 研磨黑咖啡x1", time: "12:30", total: 105, status: "製作中" },
-            { id: 103, timestamp: "11:50", email: "a109011xx@mail.edu.tw", name: "張同學", items: "脆皮薯條x1, 招牌大冰奶x1", time: "12:00", total: 60, status: "已完成" }
+            { id: 101, timestamp: "12:02", email: "b110020xx@mail.edu.tw", name: "陳同學", phoneLast3: "456", items: "經典卡拉雞腿堡x1, 招牌大冰奶x1", time: "12:15", total: 90, status: "新訂單" },
+            { id: 102, timestamp: "12:05", email: "g111034xx@mail.edu.tw", name: "林同學", phoneLast3: "123", items: "原味蛋餅x2", time: "12:30", total: 60, status: "製作中" }
         ];
 
-        // 2. 渲染訂單看板與更新上方統計數據
         function renderAdminBoard() {
             const grid = document.getElementById('ordersGrid');
-            
             if (mockOrders.length === 0) {
                 grid.innerHTML = '<p style="color: #64748b;">目前沒有任何訂單。</p>';
                 return;
             }
 
-            // 初始化統計變數
             let revenue = 0;
             let newCount = 0;
             let cookingCount = 0;
 
-            // 生成卡片 HTML
             grid.innerHTML = mockOrders.map(order => {
-                // 根據狀態設定樣式類別與徽章
                 let statusClass = 'new';
                 let nextActionHtml = '';
                 
                 if (order.status === "新訂單") {
                     newCount++;
                     statusClass = 'new';
-                    nextActionHtml = `<button class="status-btn btn-next" onclick="changeStatus(${order.id}, '製作中')">接受訂單 (開始製作)</button>`;
+                    nextActionHtml = `<button class="status-btn btn-next" onclick="changeStatus(${order.id}, '製作中')">接受訂單</button>`;
                 } else if (order.status === "製作中") {
                     cookingCount++;
                     statusClass = 'cooking';
-                    nextActionHtml = `<button class="status-btn btn-next" style="background-color: #3b82f6;" onclick="changeStatus(${order.id}, '已完成')">製作完成 (通知取餐)</button>`;
+                    nextActionHtml = `<button class="status-btn btn-next" style="background-color: #3b82f6;" onclick="changeStatus(${order.id}, '已完成')">製作完成</button>`;
                 } else if (order.status === "已完成") {
                     statusClass = 'done';
                     nextActionHtml = `<span style="color:#10b981; font-weight:bold;">✓ 已取餐</span>`;
                 }
 
-                if (order.status === "已完成") {
-                    revenue += Number(order.total); // 只把完成的算入營業額
-                }
+                if (order.status === "已完成") revenue += Number(order.total);
 
                 return `
                     <div class="order-card ${statusClass}">
                         <div>
                             <div class="order-header">
-                                <span>下單時間: ${order.timestamp}</span>
+                                <span>下單: ${order.timestamp}</span>
                                 <span class="badge ${statusClass}">${order.status}</span>
                             </div>
-                            <div class="buyer-info">${order.name} （預計 ${order.time} 取餐）</div>
-                            <div class="buyer-email">🔑 驗證帳號: ${order.email}</div>
-                            <div class="order-items">
-                                ${order.items}
+                            <div class="buyer-info">${order.name}（預計 ${order.time} 取餐）</div>
+                            <div class="buyer-detail">
+                                🔑 驗證帳號: ${order.email}<br>
+                                📱 電話後三碼: <strong style="color:#1e293b;">${order.phoneLast3}</strong>
                             </div>
+                            <div class="order-items">${order.items}</div>
                         </div>
                         <div class="order-footer">
                             <div class="total-price">NT$ ${order.total}</div>
@@ -151,40 +126,29 @@
                 `;
             }).join('');
 
-            // 更新上方統計數據
             document.getElementById('statRevenue').innerText = `NT$ ${revenue}`;
             document.getElementById('statNewOrders').innerText = `${newCount} 筆`;
             document.getElementById('statCookingOrders').innerText = `${cookingCount} 筆`;
         }
 
-        // 3. 模擬修改訂單狀態的按鈕動作
         function changeStatus(orderId, newStatus) {
             const order = mockOrders.find(o => o.id === orderId);
             if (order) {
                 order.status = newStatus;
-                renderAdminBoard(); // 重新渲染畫面
-                
-                // 💡 提示：之後這裡除了改畫面，還會發送一個 POST 請求給 Google 試算表，把表格裡的狀態同步改掉！
-                alert(`狀態已成功變更為：【${newStatus}】！\n(之後會即時同步至 Google 試算表)`);
+                renderAdminBoard();
             }
         }
 
-        // 4. 模擬重新整理按鈕
         function fetchOrders() {
-            // 先秀出載入文字模擬一下
-            document.getElementById('ordersGrid').innerHTML = '<p style="color: #64748b;">正在同步 Google 試算表最新訂單...</p>';
-            setTimeout(() => {
-                renderAdminBoard();
-            }, 500);
+            document.getElementById('ordersGrid').innerHTML = '<p style="color: #64748b;">正在同步最新訂單...</p>';
+            setTimeout(() => { renderAdminBoard(); }, 300);
         }
 
-        // 簡單的時鐘
         setInterval(() => {
             const now = new Date();
             document.getElementById('liveClock').innerText = `系統時間: ${now.toLocaleTimeString()}`;
         }, 1000);
 
-        // 網頁開啟時自動初始化
         renderAdminBoard();
     </script>
 </body>
