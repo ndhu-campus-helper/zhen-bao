@@ -28,7 +28,7 @@
 <body>
 
     <header>
-        <h1>🏫 校園美點餐網站</h1>
+        <h1>🏫 校園快捷點餐網站</h1>
         <p>登入學校帳號即可快速訂餐</p>
     </header>
 
@@ -50,8 +50,9 @@
                 <label for="custName">真實姓名：</label>
                 <input type="text" id="custName" placeholder="請輸入姓名" required>
 
-                <label for="custPhone">聯絡電話：</label>
-                <input type="tel" id="custPhone" placeholder="例如：0912345678" required>
+                <label for="phoneLast3">手機後三碼（現場取餐對帳用）：</label>
+                <!-- 💡 限制只能輸入 3 碼數字 -->
+                <input type="text" id="phoneLast3" placeholder="例如：789" pattern="[0-9]{3}" maxlength="3" required>
 
                 <label for="pickupTime">預計取餐時間：</label>
                 <select id="pickupTime" required>
@@ -98,7 +99,6 @@
             updateCart();
         }
 
-        // 更新購物車畫面與計算總價
         function updateCart() {
             const cartItemsDiv = document.getElementById('cartItems');
             const totalAmountSpan = document.getElementById('totalAmount');
@@ -126,7 +126,7 @@
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const itemSummary = cart.map(item => `${item.name}x${item.quantity}`).join(', ');
-            alert(`【前端測試成功！】\n姓名：${document.getElementById('custName').value}\n餐點：${itemSummary}`);
+            alert(`【前端測試成功！】\n姓名：${document.getElementById('custName').value}\n電話後三碼：${document.getElementById('phoneLast3').value}\n餐點：${itemSummary}`);
         });
 
         renderMenu();
