@@ -157,20 +157,15 @@
                     };
 
                     // 💡 時區補正：完美解決 12 點變成 4 點的 Bug
+                    // 💡 直接切出純文字時間，不進行任何時區加減
                     let rawTime = getProp(order, 'Time');
                     let formattedTime = '儘速取餐';
                     
                     if (rawTime) {
                         if (String(rawTime).includes('1899-12-30')) {
-                            // 將 ISO 字串轉成 JS 時間物件
-                            let dateObj = new Date(rawTime);
-                            // 💡 核心：手動加上 8 小時（台北時區補正）
-                            dateObj.setHours(dateObj.getHours() + 8);
-                            
-                            // 重新切出漂亮的時與分 (確保保持補正後的 12:00)
-                            let hh = String(dateObj.getHours()).padStart(2, '0');
-                            let mm = String(dateObj.getMinutes()).padStart(2, '0');
-                            formattedTime = `${hh}:${mm}`;
+                            // 如果帶有 ISO 日期字串，我們直接用 'T' 切開，只抓後面的時間
+                            let timePart = String(rawTime).split('T')[1]; // 拿到 "12:00:00.000Z"
+                            formattedTime = timePart.substring(0, 5);      // 切出前 5 個字 "12:00"
                         } else {
                             formattedTime = rawTime;
                         }
