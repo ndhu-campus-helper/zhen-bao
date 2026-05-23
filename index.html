@@ -51,7 +51,6 @@
                 <input type="text" id="custName" placeholder="請輸入姓名" required>
 
                 <label for="phoneLast3">手機後三碼（現場取餐對帳用）：</label>
-                <!-- 💡 限制只能輸入 3 碼數字 -->
                 <input type="text" id="phoneLast3" placeholder="例如：789" pattern="[0-9]{3}" maxlength="3" required>
 
                 <label for="pickupTime">預計取餐時間：</label>
@@ -67,7 +66,9 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbze-Sn8Wt0zINE8QnN2Qgmja_m_h1mZLjUCP0FBGd3QMi_kJm3WiLH4IxLO6rxP67U5/exec";
+        // ⚠️ 關鍵：請把下方的網址換成你那串 Google Apps Script 的 /exec 祕密網址！
+        const API_URL = "https://script.google.com/macros/s/XXXXX/exec";
+
         const menuProducts = [
             { id: 1, name: "經典卡拉雞腿堡", price: 65 },
             { id: 2, name: "原味蛋餅", price: 30 },
@@ -124,10 +125,48 @@
             submitBtn.disabled = false;
         }
 
+        // 監聽表單送出動作（真正連線 Google 試算表版）
         document.getElementById('orderForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "訂單送出中，請稍候...";
+
             const itemSummary = cart.map(item => `${item.name}x${item.quantity}`).join(', ');
-            alert(`【前端測試成功！】\n姓名：${document.getElementById('custName').value}\n電話後三碼：${document.getElementById('phoneLast3').value}\n餐點：${itemSummary}`);
+
+            const orderData = {
+                name: document.getElementById('custName').value,
+                phoneLast3: document.getElementById('phoneLast3').value,
+                time: document.getElementById('pickupTime').value,
+                items: itemSummary,
+                total: document.getElementById('totalAmount').innerText
+            };
+
+            // 真正發送資料給 Google
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(orderData)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.status === "success") {
+                    alert("🎉 訂單送出成功！店家已收到您的餐點預約。");
+                    document.getElementById('orderForm').reset();
+                    cart = [];
+                    updateCart();
+                } else {
+                    alert("❌ 點餐失敗：" + result.message);
+                }
+            })
+            .catch(err => {
+                alert("❌ 連線失敗，請確認是否已授權或登入 Google 帳號。");
+                console.error(err);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "確認送出點餐";
+            });
         });
 
         renderMenu();
