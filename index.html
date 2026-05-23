@@ -22,7 +22,7 @@
             margin: 0; 
             padding: 0; 
             line-height: 1.6;
-            scroll-behavior: smooth; /* 平滑滾動 */
+            scroll-behavior: smooth; 
         }
 
         header { 
@@ -40,7 +40,6 @@
             letter-spacing: 2px;
         }
 
-        /* 🍔 手機版漢堡按鈕 */
         .menu-toggle {
             display: none;
             position: absolute;
@@ -84,7 +83,6 @@
             margin-left: 10px;
         }
 
-        /* 📦 三欄式版面佈局 */
         .container { 
             max-width: 1200px; 
             margin: 30px auto; 
@@ -93,7 +91,6 @@
             gap: 25px; 
         }
 
-        /* 🧭 左側分類導覽列 */
         .category-sidebar {
             width: 180px;
             flex-shrink: 0;
@@ -137,7 +134,6 @@
             padding-left: 18px;
         }
 
-        /* 中央菜單區 */
         .menu-section { 
             flex: 2; 
             min-width: 320px; 
@@ -163,7 +159,6 @@
             gap: 20px; 
         }
 
-        /* 🍔 商品卡片 UI */
         .card { 
             background: white; 
             border-radius: 12px; 
@@ -209,7 +204,6 @@
             background-color: var(--accent-blue);
         }
 
-        /* 🛒 右側購物車 UI */
         .cart-section { 
             width: 320px;
             flex-shrink: 0;
@@ -346,24 +340,22 @@
 
     <div class="marquee-container">
         <span class="marquee-label">本日簡餐配菜</span>
-        <marquee behavior="scroll" direction="left" scrollamount="5">
-            手工香酥馬鈴薯泥、清炒高鈣花椰菜、黃金玉米炒蛋。每日新鮮現作，營養均衡！
+        <!-- 💡 給 marquee 綁定一個 id，讓 JS 負責塞入最新試算表文字 -->
+        <marquee behavior="scroll" direction="left" scrollamount="5" id="marqueeText">
+            正在同步最新配菜公告...
         </marquee>
     </div>
 
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <div class="container">
-        <!-- 🧭 左側分類選單 -->
         <nav class="category-sidebar" id="categorySidebar">
             <h4>商品分類</h4>
             <div id="categoryList"></div>
         </nav>
 
-        <!-- 中央菜單區 -->
         <div class="menu-section" id="menuSectionsContainer"></div>
 
-        <!-- 右側購物車 -->
         <div class="cart-section">
             <h3>🛒 您的購物車</h3>
             <div id="cartItems">
@@ -390,13 +382,12 @@
     </div>
 
     <script>
-        // ⚠️ 記得替換成你剛剛「新增部署」拿到的最新 API 網址！
+        // ⚠️ 記得替換成你最新部署拿到的網址喔！
         const API_URL = "https://script.google.com/macros/s/AKfycbyiFuz3XFgLAS7YE-Y32GDTpC8GmGSJVGnFJ2OQEnLnFnbw9se8yS1pz-RlJ7EBNyTP/exec";
 
-        let menuProducts = []; // 💡 資料改由從試算表即時動態抓取
+        let menuProducts = []; 
         let cart = [];
 
-        // 🚀 連線到 Google 試算表抓取店主設定好的動態分類與品項
         function fetchMenu() {
             const container = document.getElementById('menuSectionsContainer');
             container.innerHTML = `<p style="text-align:center; color:#457b9d; padding:20px;">ℹ️ 正在連線雲端資料庫，載入今日最新菜單...</p>`;
@@ -406,7 +397,11 @@
             .then(result => {
                 if (result.status === "success") {
                     menuProducts = result.data;
-                    initMenu(); // 成功抓到資料後，繪製網頁介面
+                    
+                    // 💡 核心：將抓回來的動態跑馬燈文字，直接塞入 HTML 看板
+                    document.getElementById('marqueeText').innerText = result.marquee || "今日配菜新鮮供應中！";
+                    
+                    initMenu(); 
                 } else {
                     container.innerHTML = `<p style="text-align:center; color:#e63946; padding:20px;">❌ 菜單載入失敗：${result.message}</p>`;
                 }
@@ -422,23 +417,19 @@
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
 
-        // 🔄 依據抓回來的資料，自動排序、分類並繪製畫面的核心
         function initMenu() {
             if (menuProducts.length === 0) {
                 document.getElementById('menuSectionsContainer').innerHTML = `<p style="text-align:center; color:#888; padding:20px;">今日店家休息中，暫不供應餐點。</p>`;
                 return;
             }
 
-            // 自動抽取出所有店主有在試算表填寫的分類（不重複）
             const categories = [...new Set(menuProducts.map(p => p.category))];
             
-            // 1. 動態畫出左側/漢堡分類按鈕
             const categoryList = document.getElementById('categoryList');
             categoryList.innerHTML = categories.map(cat => `
                 <button class="category-btn" onclick="scrollToCategory('${cat}')">${cat}</button>
             `).join('');
 
-            // 2. 動態畫出中央分類商品區塊
             const container = document.getElementById('menuSectionsContainer');
             container.innerHTML = categories.map(cat => {
                 const filteredProducts = menuProducts.filter(p => p.category === cat);
@@ -542,7 +533,6 @@
             });
         });
 
-        // 🚀 網頁一載入，立刻去 Google 試算表搬菜單回來！
         fetchMenu();
     </script>
 </body>
