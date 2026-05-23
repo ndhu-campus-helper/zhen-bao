@@ -5,57 +5,293 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>校園快捷點餐系統</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; padding: 0; }
-        header { background-color: #e63946; color: white; text-align: center; padding: 20px 0; }
-        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; display: flex; gap: 20px; flex-wrap: wrap; }
-        .menu-section { flex: 2; min-width: 300px; }
-        .menu-title { border-left: 5px solid #e63946; padding-left: 10px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
-        .card h4 { margin: 0 0 10px 0; font-size: 1.1rem; }
-        .card .price { color: #e63946; font-weight: bold; margin-bottom: 15px; }
-        .card button { background-color: #1d3557; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; }
-        .cart-section { flex: 1; min-width: 300px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); height: fit-content; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .cart-item button { background: #e63946; color: white; border: none; padding: 2px 8px; border-radius: 3px; cursor: pointer; }
-        .total-price { text-align: right; font-size: 1.2rem; font-weight: bold; margin: 20px 0; color: #e63946; }
-        form label { display: block; margin-top: 10px; font-weight: bold; }
-        form input, form select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .submit-btn { background-color: #e63946; color: white; border: none; width: 100%; padding: 12px; margin-top: 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; font-weight: bold; }
-        .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+        /* 🎨 藍色系文青風核心配色 */
+        :root {
+            --bg-color: #f4f7f9;        /* 輕柔的文青霧灰藍底 */
+            --primary-dark: #1d3557;   /* 深普魯士藍（標題、主按鈕） */
+            --accent-blue: #457b9d;    /* 莫蘭迪藍（價格、副標題） */
+            --light-blue: #a8dadc;     /* 淡粉藍（跑馬燈背景、點綴） */
+            --text-main: #2b3a4a;      /* 深藍灰字體（高質感文字） */
+            --card-shadow: 0 8px 20px rgba(29, 53, 87, 0.04); /* 空氣感微陰影 */
+        }
+
+        body { 
+            font-family: "PingFang TC", "Helvetica Neue", Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            line-height: 1.6;
+        }
+
+        header { 
+            background-color: var(--primary-dark); 
+            color: white; 
+            text-align: center; 
+            padding: 35px 0 25px 0; 
+        }
+        
+        header h1 { 
+            margin: 0; 
+            font-size: 1.8rem; 
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        /* 🏷️ 質感跑馬燈設計 */
+        .marquee-container {
+            background-color: #eaf4f4;
+            color: var(--primary-dark);
+            padding: 8px 0;
+            font-size: 0.95rem;
+            font-weight: 500;
+            border-bottom: 1px solid var(--light-blue);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .marquee-label {
+            background-color: var(--accent-blue);
+            color: white;
+            padding: 2px 10px;
+            margin-left: 15px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            z-index: 10;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        marquee {
+            margin-left: 10px;
+        }
+
+        /* 📦 版面佈局優化 */
+        .container { 
+            max-width: 1050px; 
+            margin: 30px auto; 
+            padding: 0 20px; 
+            display: flex; 
+            gap: 25px; 
+            flex-wrap: wrap; 
+        }
+
+        .menu-section { 
+            flex: 2; 
+            min-width: 320px; 
+        }
+
+        .menu-title { 
+            border-left: 4px solid var(--accent-blue); 
+            padding-left: 12px; 
+            margin-bottom: 25px; 
+            color: var(--primary-dark);
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            gap: 20px; 
+        }
+
+        /* 🍔 商品卡片 UI */
+        .card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: var(--card-shadow); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(69, 123, 157, 0.08);
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(29, 53, 87, 0.08);
+        }
+
+        .card h4 { 
+            margin: 0 0 10px 0; 
+            font-size: 1.15rem; 
+            color: var(--primary-dark);
+        }
+
+        .card .price { 
+            color: var(--accent-blue); 
+            font-weight: bold; 
+            font-size: 1.1rem;
+            margin-bottom: 20px; 
+        }
+
+        .card button { 
+            background-color: var(--primary-dark); 
+            color: white; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .card button:hover {
+            background-color: var(--accent-blue);
+        }
+
+        /* 🛒 購物車與右側表單 UI */
+        .cart-section { 
+            flex: 1; 
+            min-width: 320px; 
+            background: white; 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: var(--card-shadow); 
+            height: fit-content; 
+            border: 1px solid rgba(69, 123, 157, 0.08);
+        }
+
+        .cart-section h3 {
+            margin-top: 0;
+            color: var(--primary-dark);
+            font-size: 1.25rem;
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 10px;
+        }
+
+        .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 0; 
+            border-bottom: 1px solid #f0f4f8; 
+        }
+
+        .cart-item strong {
+            color: var(--primary-dark);
+        }
+
+        .cart-item button { 
+            background: #e63946; 
+            color: white; 
+            border: none; 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 0.85rem;
+        }
+
+        .total-price { 
+            text-align: right; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            margin: 20px 0; 
+            color: var(--accent-blue); 
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #edf2f7;
+            margin: 25px 0;
+        }
+
+        /* 📋 填寫欄位 UI */
+        form label { 
+            display: block; 
+            margin-top: 15px; 
+            font-weight: 500; 
+            font-size: 0.95rem;
+            color: var(--primary-dark);
+        }
+
+        form input, form select { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 6px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-size: 0.95rem;
+            background-color: #f8fafc;
+            color: var(--text-main);
+        }
+
+        form input:focus, form select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background-color: white;
+        }
+
+        .submit-btn { 
+            background-color: var(--accent-blue); 
+            color: white; 
+            border: none; 
+            width: 100%; 
+            padding: 14px; 
+            margin-top: 25px; 
+            border-radius: 6px; 
+            font-size: 1.05rem; 
+            cursor: pointer; 
+            font-weight: bold; 
+            letter-spacing: 1px;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover { 
+            background-color: var(--primary-dark); 
+        }
+
+        .submit-btn:disabled { 
+            background-color: #cbd5e1; 
+            color: #94a3b8;
+            cursor: not-allowed; 
+        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>🏫 校園快捷點餐網站</h1>
-        <p>點餐免登入！請填寫正確聯絡電話方便店家核對</p>
     </header>
+
+    <div class="marquee-container">
+        <span class="marquee-label">本日簡餐配菜</span>
+        <marquee behavior="scroll" direction="left" scrollamount="5">
+            🍱 今日主廚精選配菜：手工香酥馬鈴薯泥、清炒高鈣花椰菜、黃金玉米炒蛋。每日新鮮現作，營養均衡！
+        </marquee>
+    </div>
 
     <div class="container">
         <div class="menu-section">
-            <h3 class="menu-title">今日菜單</h3>
+            <h3 class="menu-title">今日特選菜單</h3>
             <div class="grid" id="menuGrid"></div>
         </div>
 
         <div class="cart-section">
             <h3>🛒 您的購物車</h3>
             <div id="cartItems">
-                <p style="color: #888;">購物車是空的，快去選購吧！</p>
+                <p style="color: #888; font-size: 0.95rem;">購物車是空的，快去選購吧！</p>
             </div>
             <div class="total-price">總計: NT$ <span id="totalAmount">0</span></div>
+            
             <hr>
+            
             <h3>📋 訂購人資訊</h3>
             <form id="orderForm">
                 <label for="custName">真實姓名：</label>
-                <input type="text" id="custName" placeholder="請輸入姓名" required>
+                <input type="text" id="custName" placeholder="請輸入您的姓名" required>
 
-                <label for="custPhone">聯絡電話（若餐點有狀況店家將以此致電）：</label>
+                <label for="custPhone">聯絡電話（核對與異常通知）：</label>
                 <input type="tel" id="custPhone" placeholder="例如：0912345678" required>
 
                 <label for="pickupTime">預計取餐時間：</label>
                 <select id="pickupTime" required>
-                    <option value="">請選擇時間...</option>
+                    <option value="">請選擇取餐時間...</option>
                     <option value="12:00">12:00</option>
                     <option value="12:15">12:15</option>
                     <option value="12:30">12:30</option>
@@ -66,7 +302,6 @@
     </div>
 
     <script>
-        // ⚠️ 請換成你剛剛產生的最新 API 網址
         const API_URL = "https://script.google.com/macros/s/AKfycby9MAsImUPHMAM3t4QdszaXcdl4n2wKjR_zZozHkpuGTbqai1cXZzT3UUsi-LSihPgz/exec";
 
         const menuProducts = [
@@ -107,7 +342,7 @@
             const submitBtn = document.getElementById('submitBtn');
 
             if (cart.length === 0) {
-                cartItemsDiv.innerHTML = `<p style="color: #888;">購物車是空的，快去選購吧！</p>`;
+                cartItemsDiv.innerHTML = `<p style="color: #888; font-size: 0.95rem;">購物車是空的，快去選購吧！</p>`;
                 totalAmountSpan.innerText = "0";
                 submitBtn.disabled = true;
                 return;
@@ -115,7 +350,7 @@
 
             cartItemsDiv.innerHTML = cart.map(item => `
                 <div class="cart-item">
-                    <div><strong>${item.name}</strong><br><small>NT$ ${item.price} x ${item.quantity}</small></div>
+                    <div><strong>${item.name}</strong><br><small style="color:#64748b;">NT$ ${item.price} x ${item.quantity}</small></div>
                     <button onclick="removeFromCart(${item.id})">刪除</button>
                 </div>
             `).join('');
