@@ -21,11 +21,11 @@
         .order-card.cooking { border-top-color: #f59e0b; }
         .order-card.done { border-top-color: #10b981; opacity: 0.7; }
         .order-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #64748b; }
-        .buyer-info { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; color: #0f172a; }
-        .buyer-detail { font-size: 0.85rem; color: #64748b; margin-top: -5px; margin-bottom: 15px; line-height: 1.4; }
-        .order-items { background: #f8fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.95rem; line-height: 1.5; }
+        .buyer-info { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; color: #0f172a; }
+        .buyer-detail { font-size: 0.95rem; color: #475569; margin-top: -5px; margin-bottom: 15px; line-height: 1.4; }
+        .order-items { background: #f8fafc; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.95rem; line-height: 1.5; color: #1e293b; font-weight: 500; }
         .order-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
-        .total-price { font-weight: bold; color: #ef4444; font-size: 1.1rem; }
+        .total-price { font-weight: bold; color: #ef4444; font-size: 1.2rem; }
         .status-btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
         .btn-next { background-color: #10b981; color: white; }
         .badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
@@ -63,17 +63,15 @@
         </div>
 
         <div class="orders-grid" id="ordersGrid">
-            <p style="color: #64748b;">正在載入最新訂單...</p>
+            <p style="color: #64748b;">正在從 Google 試算表同步訂單...</p>
         </div>
     </div>
 
     <script>
+        // ⚠️ 記得把這裡換成你那串 Google Apps Script 的 /exec 網址！
         const API_URL = "https://script.google.com/macros/s/AKfycbwoS8NAFBIoF6wT2WG95QqqDk4qT4L42tc2NbGPOuI-LKkKGxL8C_tWemmuyZPOU-aE/exec";
-        // 模擬從資料庫撈取到的新資料結構
-        let mockOrders = [
-            { id: 101, timestamp: "12:02", email: "b110020xx@mail.edu.tw", name: "陳同學", phoneLast3: "456", items: "經典卡拉雞腿堡x1, 招牌大冰奶x1", time: "12:15", total: 90, status: "新訂單" },
-            { id: 102, timestamp: "12:05", email: "g111034xx@mail.edu.tw", name: "林同學", phoneLast3: "123", items: "原味蛋餅x2", time: "12:30", total: 60, status: "製作中" }
-        ];
+
+        let mockOrders = [];
 
         function renderAdminBoard() {
             const grid = document.getElementById('ordersGrid');
@@ -105,19 +103,20 @@
 
                 if (order.status === "已完成") revenue += Number(order.total);
 
+                // 💡 這裡已經把 Email 的 HTML 欄位完全刪除，只留下最乾淨的顧客資訊！
                 return `
                     <div class="order-card ${statusClass}">
                         <div>
                             <div class="order-header">
-                                <span>下單: ${order.timestamp}</span>
+                                <span>下單時間: ${order.timestamp}</span>
                                 <span class="badge ${statusClass}">${order.status}</span>
                             </div>
-                            <div class="buyer-info">${order.name}（預計 ${order.time} 取餐）</div>
+                            <div class="buyer-info">${order.name}</div>
                             <div class="buyer-detail">
-                                🔑 驗證帳號: ${order.email}<br>
-                                📱 電話後三碼: <strong style="color:#1e293b;">${order.phoneLast3}</strong>
+                                ⏰ 預計取餐：<strong style="color:#1e293b;">${order.time}</strong><br>
+                                📱 電話後三碼：<strong style="color:#e63946;">${order.phoneLast3}</strong>
                             </div>
-                            <div class="order-items">${order.items}</div>
+                            <div class="order-items">🛒 ${order.items}</div>
                         </div>
                         <div class="order-footer">
                             <div class="total-price">NT$ ${order.total}</div>
@@ -132,6 +131,37 @@
             document.getElementById('statCookingOrders').innerText = `${cookingCount} 筆`;
         }
 
+        // 真正從 Google 試算表抓取最新點餐資料 (GET)
+        function fetchOrders() {
+            const grid = document.getElementById('ordersGrid');
+            grid.innerHTML = '<p style="color: #64748b;">🔄 正在從 Google 試算表即時同步最新訂單...</p>';
+            
+            fetch(API_URL)
+            .then(res => res.json())
+            .then(data => {
+                // 將資料倒序，最新訂單排最上面
+                let rawOrders = data.reverse(); 
+                
+                // 將 Google 試算表的資料欄位映射到前端網頁
+                mockOrders = rawOrders.map((order, index) => ({
+                    id: index, 
+                    timestamp: order.Timestamp ? new Date(order.Timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '未知',
+                    name: order.Name || '無名氏',
+                    phoneLast3: order.PhoneLast3 || '無',
+                    items: order.Items || '無餐點',
+                    time: order.Time || '未定',
+                    total: order.Total || 0,
+                    status: order.Status || '新訂單'
+                }));
+
+                renderAdminBoard(); 
+            })
+            .catch(err => {
+                grid.innerHTML = '<p style="color: #ef4444;">❌ 訂單同步失敗，請確認後端部署設定是否正確。</p>';
+                console.error(err);
+            });
+        }
+
         function changeStatus(orderId, newStatus) {
             const order = mockOrders.find(o => o.id === orderId);
             if (order) {
@@ -140,17 +170,13 @@
             }
         }
 
-        function fetchOrders() {
-            document.getElementById('ordersGrid').innerHTML = '<p style="color: #64748b;">正在同步最新訂單...</p>';
-            setTimeout(() => { renderAdminBoard(); }, 300);
-        }
-
         setInterval(() => {
             const now = new Date();
             document.getElementById('liveClock').innerText = `系統時間: ${now.toLocaleTimeString()}`;
         }, 1000);
 
-        renderAdminBoard();
+        // 一進網頁自動抓真資料
+        fetchOrders();
     </script>
 </body>
 </html>
