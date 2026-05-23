@@ -157,15 +157,25 @@
                     };
 
                     // 💡 時區補正：完美解決 12 點變成 4 點的 Bug
-                    // 💡 直接切出純文字時間，不進行任何時區加減
+                   // 💡 時區終極對齊：把被扣掉的 8 小時精準補回來
                     let rawTime = getProp(order, 'Time');
                     let formattedTime = '儘速取餐';
                     
                     if (rawTime) {
                         if (String(rawTime).includes('1899-12-30')) {
-                            // 如果帶有 ISO 日期字串，我們直接用 'T' 切開，只抓後面的時間
-                            let timePart = String(rawTime).split('T')[1]; // 拿到 "12:00:00.000Z"
-                            formattedTime = timePart.substring(0, 5);      // 切出前 5 個字 "12:00"
+                            // 1. 先用 'T' 切開，拿到 "04:00:00.000Z"
+                            let timePart = String(rawTime).split('T')[1];
+                            // 2. 抓出裡面的小時（04）和分鐘（00）
+                            let hour = parseInt(timePart.substring(0, 2), 10);
+                            let minute = timePart.substring(3, 5);
+                            
+                            // 3. 把被扣掉的 8 小時加回來，如果超過 24 小時就循環
+                            let correctedHour = (hour + 8) % 24;
+                            
+                            // 4. 補上前方的大底零（例如 9 點變成 09 點）
+                            let hh = String(correctedHour).padStart(2, '0');
+                            
+                            formattedTime = `${hh}:${minute}`;
                         } else {
                             formattedTime = rawTime;
                         }
